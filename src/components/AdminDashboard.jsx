@@ -44,17 +44,21 @@ const AdminDashboard = () => {
     };
 
     try {
-      const response = await fetch(WEBHOOK_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+      // Convert the payload into safe URL parameters
+      const queryParams = new URLSearchParams(payload).toString();
+      // Attach the parameters to your exact Webhook URL
+      const finalUrl = `${WEBHOOK_URL}&${queryParams}`;
+
+      // Send a simple GET request (Bypasses all CORS blocks)
+      const response = await fetch(finalUrl, {
+        method: 'GET'
       });
 
       if (response.ok) {
         WebApp.showAlert(`Success! ${taskForm.type.toUpperCase()} task deployed to Maximus.`);
         setTaskForm({ title: '', reward: '', type: 'basic', url: '' });
       } else {
-        WebApp.showAlert("Error sending task to bot.");
+        WebApp.showAlert("Error: Maximus received the request but rejected it.");
       }
     } catch (error) {
       WebApp.showAlert("Network error. Could not connect to Maximus.");
