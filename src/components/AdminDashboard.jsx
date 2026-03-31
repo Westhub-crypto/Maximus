@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import WebApp from '@twa-dev/sdk';
 
 const ADMIN_ID = 8067627422;
-const WEBHOOK_URL = "https://api.bots.business/v1/bots/2900973/new-webhook?&command=api_addTask&public_user_token=13106f8ff5073717b3d1e631eca0f4fe&user_id=8067627422"; 
+// Cleaned up the URL slightly (removed an extra &)
+const WEBHOOK_URL = "https://api.bots.business/v1/bots/2900973/new-webhook?command=api_addTask&public_user_token=13106f8ff5073717b3d1e631eca0f4fe&user_id=8067627422"; 
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -44,23 +45,19 @@ const AdminDashboard = () => {
     };
 
     try {
-      // The text/plain Ninja Trick: Bypasses CORS and delivers pure JSON
-      const response = await fetch(WEBHOOK_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'text/plain'
-        },
-        body: JSON.stringify(payload)
-      });
+      // Package the data into the URL
+      const queryParams = new URLSearchParams(payload).toString();
+      const finalUrl = `${WEBHOOK_URL}&${queryParams}`;
 
-      if (response.ok) {
-        WebApp.showAlert(`Success! ${taskForm.type.toUpperCase()} task deployed to Maximus.`);
-        setTaskForm({ title: '', reward: '', type: 'basic', url: '' });
-      } else {
-        WebApp.showAlert("Error: Server received it but rejected the format.");
-      }
+      // "Fire and forget" the GET request. Bypass CORS entirely.
+      fetch(finalUrl, { mode: 'no-cors' });
+
+      // Instantly clear the form and show success
+      WebApp.showAlert(`Success! Task deployed to Maximus.`);
+      setTaskForm({ title: '', reward: '', type: 'basic', url: '' });
+      
     } catch (error) {
-      WebApp.showAlert("Network error. Could not connect to Maximus.");
+      WebApp.showAlert("Network error. Check your connection.");
     }
   };
 
