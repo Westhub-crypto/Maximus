@@ -44,21 +44,26 @@ const AdminDashboard = () => {
     };
 
     try {
-      const queryParams = new URLSearchParams(payload).toString();
-      const finalUrl = `${WEBHOOK_URL}&${queryParams}`;
+      // Package the data into a secure URL-encoded string
+      const formData = new URLSearchParams(payload).toString();
 
-      // Send the request blindly through the CORS shield
-      await fetch(finalUrl, {
-        method: 'GET',
-        mode: 'no-cors'
+      // Send the "Simple POST" request. This bypasses CORS and satisfies Bots.Business!
+      const response = await fetch(WEBHOOK_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: formData
       });
 
-      // Assume success if no network crash occurred
-      WebApp.showAlert(`Success! ${taskForm.type.toUpperCase()} task deployed to Maximus.`);
-      setTaskForm({ title: '', reward: '', type: 'basic', url: '' });
-
+      if (response.ok) {
+        WebApp.showAlert(`Success! ${taskForm.type.toUpperCase()} task deployed to Maximus.`);
+        setTaskForm({ title: '', reward: '', type: 'basic', url: '' });
+      } else {
+        WebApp.showAlert("Error: Server received it but rejected the format.");
+      }
     } catch (error) {
-      WebApp.showAlert("Network error. Could not connect to the internet.");
+      WebApp.showAlert("Network error. Could not connect to Maximus.");
     }
   };
 
