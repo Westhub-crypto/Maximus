@@ -44,16 +44,13 @@ const AdminDashboard = () => {
     };
 
     try {
-      // Package the data into a secure URL-encoded string
-      const formData = new URLSearchParams(payload).toString();
-
-      // Send the "Simple POST" request. This bypasses CORS and satisfies Bots.Business!
+      // The text/plain Ninja Trick: Bypasses CORS and delivers pure JSON
       const response = await fetch(WEBHOOK_URL, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
+          'Content-Type': 'text/plain'
         },
-        body: formData
+        body: JSON.stringify(payload)
       });
 
       if (response.ok) {
